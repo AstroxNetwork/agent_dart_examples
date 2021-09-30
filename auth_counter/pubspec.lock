@@ -8,8 +8,15 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.1.15+2"
+  agent_dart_auth:
+    dependency: "direct main"
+    description:
+      name: agent_dart_auth
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.0.2"
   archive:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: archive
       url: "https://pub.flutter-io.cn"
@@ -21,7 +28,7 @@ packages:
       name: args
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.2.0"
+    version: "2.3.0"
   async:
     dependency: transitive
     description:
@@ -144,6 +151,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_web_auth:
+    dependency: transitive
+    description:
+      name: flutter_web_auth
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.3.1"
   hex:
     dependency: transitive
     description:
