@@ -14,7 +14,7 @@ An example app that interact with ledger wasm
 ```
     take down the "ledger" canister id.
 
-1. modify `AgentFactory` settings in `main.dart`
+2. modify `AgentFactory` settings in `main.dart`
 ```dart
 Future<AgentFactory> getAgent() async {
     return await AgentFactory.createAgent(
