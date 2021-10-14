@@ -7,7 +7,7 @@ packages:
       name: agent_dart
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.1.15+2"
+    version: "0.1.16+1"
   agent_dart_auth:
     dependency: "direct main"
     description:
@@ -21,7 +21,7 @@ packages:
       name: archive
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.1.2"
+    version: "3.1.6"
   args:
     dependency: transitive
     description:
@@ -158,6 +158,11 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.3.1"
+  flutter_web_plugins:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   hex:
     dependency: transitive
     description:
