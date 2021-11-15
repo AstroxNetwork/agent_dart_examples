@@ -45,9 +45,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> initCounter({Identity? identity}) async {
     // initialize counter, change canister id here
-    counter = Counter(canisterId: 'x5cqe-syaaa-aaaaa-aaaxa-cai', url: 'http://localhost:8000');
+    counter = Counter(canisterId: 'sgymv-uiaaa-aaaaa-aaaia-cai', url: 'http://localhost:8000');
     // set agent when other paramater comes in like new Identity
     await counter?.setAgent(newIdentity: identity);
+    await getValue();
   }
 
   // get value from canister

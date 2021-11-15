@@ -12,7 +12,9 @@ final icpNumber = NumberFormat('#,##0.00000000', 'en_US');
 
 String _formatBalance(BigInt balance, {bool icp = false}) {
   var rawString = balance.toInt();
-  return !icp ? e8sNumber.format(rawString) : icpNumber.format((balance / BigInt.from(100000000)));
+  return !icp
+      ? e8sNumber.format(rawString)
+      : icpNumber.format((balance / BigInt.from(100000000)));
 }
 
 String _formatAccountAddress(String address) {
@@ -45,8 +47,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  ICPSigner? _signer; // a32bf2912509d0561f3394009ba5b062ac3f607d6bf171f48841ebbc5005c82a
-  String? _receiver; // 9efbf2f05081dcae470c1f3b8781c4030bb7fe17297dbdf10dcbcd3841d0a3f1;
+  ICPSigner?
+      _signer; // a32bf2912509d0561f3394009ba5b062ac3f607d6bf171f48841ebbc5005c82a
+  String?
+      _receiver; // 9efbf2f05081dcae470c1f3b8781c4030bb7fe17297dbdf10dcbcd3841d0a3f1;
   BigInt? _amount;
   BigInt _fee = BigInt.from(10000);
   String? _memo;
@@ -60,7 +64,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController receiverController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController feeController = TextEditingController()
-    ..value = TextEditingValue(text: _formatBalance(BigInt.from(10000), icp: true));
+    ..value =
+        TextEditingValue(text: _formatBalance(BigInt.from(10000), icp: true));
   final TextEditingController memoController = TextEditingController();
 
   @override
@@ -74,7 +79,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   bool isOk() {
-    if (_signer == null || _receiver == null || _receiver!.isEmpty || _amount == null) {
+    if (_signer == null ||
+        _receiver == null ||
+        _receiver!.isEmpty ||
+        _amount == null) {
       return false;
     }
     return true;
@@ -83,10 +91,14 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<AgentFactory> getAgent() async {
     return await AgentFactory.createAgent(
         canisterId:
-            "rwlgt-iiaaa-aaaaa-aaaaa-cai", // local ledger canister id, should change accourdingly
-        url: "http://localhost:8000/", // For Android emulator, please use 10.0.2.2 as endpoint
+            "5s64f-ryaaa-aaaaa-aabna-cai", // "6xkho-mqaaa-aaaaa-aabgq-cai", //"ryjl3-tyaaa-aaaaa-aaaba-cai", // local ledger canister id, should change accourdingly
+        url:
+            "http://localhost:8000", //"http://localhost:8000", //"https://raw.ic0.app/", // For Android emulator, please use 10.0.2.2 as endpoint
         idl: ledgerIdl,
-        identity: _signer?.account.ecIdentity,
+        identity: _signer!.sourceType == SourceType.Plug ||
+                _signer!.sourceType == SourceType.II
+            ? _signer?.account.ecIdentity
+            : _signer?.account.identity,
         debug: true);
   }
 
@@ -105,15 +117,21 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> setSignerBalance() async {
-    var senderBalance =
-        await Ledger.getBalance(agent: _agent!, accountId: _signer!.ecChecksumAddress!);
+    print(_signer!.sourceType);
+    var senderBalance = await Ledger.getBalance(
+        agent: _agent!,
+        accountId: _signer!.sourceType == SourceType.Plug ||
+                _signer!.sourceType == SourceType.II
+            ? _signer!.ecChecksumAddress!
+            : _signer!.idChecksumAddress!);
     setState(() {
       _senderBalance = senderBalance;
     });
   }
 
   Future<void> setReceiverBalance() async {
-    var receiverBalance = await Ledger.getBalance(agent: _agent!, accountId: _receiver!);
+    var receiverBalance =
+        await Ledger.getBalance(agent: _agent!, accountId: _receiver!);
     setState(() {
       _receiverBalance = receiverBalance;
     });
@@ -163,13 +181,12 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-          child: Container(
+      body: Container(
         margin: EdgeInsets.all(32),
         padding: EdgeInsets.all(32),
         decoration: BoxDecoration(color: Colors.white),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: ListView(
+          // mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
               'Prepare transaction',
@@ -181,44 +198,48 @@ class _MyHomePageState extends State<MyHomePage> {
             Container(
                 decoration: BoxDecoration(color: Colors.black12),
                 padding: EdgeInsets.all(16.0),
-                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text(
-                    _signer == null
-                        ? 'Please create or import account'
-                        : _formatAccountAddress(_signer!.ecChecksumAddress.toString()),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      MaterialButton(
-                        onPressed: () async {
-                          var signer =
-                              await Navigator.of(context).push(MaterialPageRoute<ICPSigner?>(
-                                  builder: (BuildContext context) => const ImportAccountPage(
-                                        title: 'Import Account',
-                                      )));
-                          if (signer is ICPSigner) {
-                            setSigner(signer);
-                          }
-                        },
-                        child: Text(
-                          'Import Account',
-                          style: TextStyle(color: Colors.green),
-                        ),
+                      Text(
+                        _signer == null
+                            ? 'Please create or import account'
+                            : _formatAccountAddress(
+                                _signer!.ecChecksumAddress.toString()),
                       ),
-                      MaterialButton(
-                        onPressed: () {
-                          // print(ICPSigner.create().ecChecksumAddress);
-                          setSigner(ICPSigner.create());
-                        },
-                        child: Text(
-                          'Create Random',
-                          style: TextStyle(color: Colors.red),
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          MaterialButton(
+                            onPressed: () async {
+                              var signer = await Navigator.of(context).push(
+                                  MaterialPageRoute<ICPSigner?>(
+                                      builder: (BuildContext context) =>
+                                          const ImportAccountPage(
+                                            title: 'Import Account',
+                                          )));
+                              if (signer is ICPSigner) {
+                                setSigner(signer);
+                              }
+                            },
+                            child: Text(
+                              'Import Account',
+                              style: TextStyle(color: Colors.green),
+                            ),
+                          ),
+                          MaterialButton(
+                            onPressed: () {
+                              // print(ICPSigner.create().ecChecksumAddress);
+                              setSigner(ICPSigner.create());
+                            },
+                            child: Text(
+                              'Create Random',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          )
+                        ],
                       )
-                    ],
-                  )
-                ])),
+                    ])),
             SizedBox(
               height: 16,
             ),
@@ -234,10 +255,13 @@ class _MyHomePageState extends State<MyHomePage> {
               controller: receiverController,
               decoration: InputDecoration(
                 hintText: 'Input Recipient Address',
-                contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
               ),
               validator: (val) {
-                return val == '' || val == null ? 'Mnemonic phrase must not be empty' : null;
+                return val == '' || val == null
+                    ? 'Mnemonic phrase must not be empty'
+                    : null;
               },
               onChanged: (val) async {
                 setReceiver(val);
@@ -249,7 +273,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             _receiverBalance == null
                 ? SizedBox.shrink()
-                : Text(_formatBalance(_receiverBalance!.e8s, icp: true) + ' ICP'),
+                : Text(
+                    _formatBalance(_receiverBalance!.e8s, icp: true) + ' ICP'),
             SizedBox(
               height: 32,
             ),
@@ -259,10 +284,13 @@ class _MyHomePageState extends State<MyHomePage> {
               controller: amountController,
               decoration: InputDecoration(
                   hintText: 'Input Amount',
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                   suffixText: 'ICP'),
               validator: (val) {
-                return val == '' || val == null ? 'Input Amount must not be empty' : null;
+                return val == '' || val == null
+                    ? 'Input Amount must not be empty'
+                    : null;
               },
               onChanged: (val) {
                 setAmount(val);
@@ -279,10 +307,13 @@ class _MyHomePageState extends State<MyHomePage> {
               controller: feeController,
               decoration: InputDecoration(
                   hintText: 'Input Fee',
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                   suffixText: 'ICP'),
               validator: (val) {
-                return val == '' || val == null ? 'Input Amount must not be empty' : null;
+                return val == '' || val == null
+                    ? 'Input Amount must not be empty'
+                    : null;
               },
               onChanged: (val) {
                 setFee(val);
@@ -298,7 +329,8 @@ class _MyHomePageState extends State<MyHomePage> {
               controller: memoController,
               decoration: InputDecoration(
                   hintText: 'Input Memo',
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                   suffixText: 'Default: Empty or length <= 8'),
               onChanged: (val) {
                 setMemo(val);
@@ -312,9 +344,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     : null;
               },
             ),
-            SizedBox(
-              height: 32,
-            ),
+            SizedBox(height: 32),
             MaterialButton(
                 padding: EdgeInsets.symmetric(vertical: 32, horizontal: 32),
                 color: Colors.black,
@@ -337,56 +367,70 @@ class _MyHomePageState extends State<MyHomePage> {
                                         },
                                         child: Text(
                                           'Confirm',
-                                          style: TextStyle(fontSize: 24, color: Colors.black),
+                                          style: TextStyle(
+                                              fontSize: 24,
+                                              color: Colors.black),
                                         ))
                                   ],
                                   content: Column(children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           'Sender: ',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
                                         ),
-                                        Text(_formatAccountAddress(_signer!.ecChecksumAddress!))
+                                        Text(_formatAccountAddress(
+                                            _signer!.ecChecksumAddress!))
                                       ],
                                     ),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           'Receiver: ',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
                                         ),
                                         Text(_formatAccountAddress(_receiver!))
                                       ],
                                     ),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           'Amount: ',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
                                         ),
-                                        Text(_formatBalance(_amount!, icp: true))
+                                        Text(
+                                            _formatBalance(_amount!, icp: true))
                                       ],
                                     ),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           'Fee: ',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
                                         ),
                                         Text(_formatBalance(_fee, icp: true))
                                       ],
                                     ),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           'Memo: ',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
                                         ),
                                         Text(_memo ?? 'EMPTY')
                                       ],
@@ -394,7 +438,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ]),
                                 ));
 
-                        if (dialogConfirm) {
+                        if (dialogConfirm != null && dialogConfirm == true) {
                           await showDialog(
                               context: context,
                               builder: (context) {
@@ -408,7 +452,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                         },
                                         child: Text(
                                           'Confirm',
-                                          style: TextStyle(fontSize: 24, color: Colors.black),
+                                          style: TextStyle(
+                                              fontSize: 24,
+                                              color: Colors.black),
                                         ))
                                   ],
                                   content: SendingWidget(
@@ -429,7 +475,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       })
           ],
         ),
-      )),
+      ),
       // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
@@ -504,7 +550,8 @@ class _ImportAccountPageState extends State<ImportAccountPage> {
           .map<DropdownMenuItem<SourceType>>((SourceType value) {
         return DropdownMenuItem<SourceType>(
           value: value,
-          child: Text('Type: ' + value.toString().replaceAll('SourceType.', '')),
+          child:
+              Text('Type: ' + value.toString().replaceAll('SourceType.', '')),
         );
       }).toList(),
     );
@@ -537,10 +584,13 @@ class _ImportAccountPageState extends State<ImportAccountPage> {
                     controller: _phraseController,
                     decoration: InputDecoration(
                         hintText: 'Input Mnemonic phrase',
-                        contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 4.0),
                         suffix: ddBtn()),
                     validator: (val) {
-                      return val == '' || val == null ? 'Mnemonic phrase must not be empty' : null;
+                      return val == '' || val == null
+                          ? 'Mnemonic phrase must not be empty'
+                          : null;
                     },
                     onChanged: (val) {
                       setPhrase(val);
@@ -552,7 +602,8 @@ class _ImportAccountPageState extends State<ImportAccountPage> {
                     height: 32,
                   ),
                   MaterialButton(
-                      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                       color: Colors.black,
                       child: Text(
                         'Validate and import account',
@@ -565,12 +616,15 @@ class _ImportAccountPageState extends State<ImportAccountPage> {
                               context: context,
                               builder: (context) => AlertDialog(
                                     title: Text('Error'),
-                                    content: Text('Mnemonic phrase is not correct'),
+                                    content:
+                                        Text('Mnemonic phrase is not correct'),
                                   ));
                         } else {
                           print(_sourceType);
                           Navigator.pop(
-                              context, ICPSigner.importPhrase(_phrase!, sourceType: _sourceType));
+                              context,
+                              ICPSigner.importPhrase(_phrase!,
+                                  sourceType: _sourceType));
                         }
                       })
                 ],
@@ -585,8 +639,10 @@ class _ImportAccountPageState extends State<ImportAccountPage> {
 }
 
 class SendingWidget extends StatefulWidget {
-  final ICPSigner? signer; // 6d8ab6a716046a5a7ff21165fd6649067e07998c1ce3bd3581dba290cedb8b53
-  final String? receiver; // 9efbf2f05081dcae470c1f3b8781c4030bb7fe17297dbdf10dcbcd3841d0a3f1;
+  final ICPSigner?
+      signer; // 6d8ab6a716046a5a7ff21165fd6649067e07998c1ce3bd3581dba290cedb8b53
+  final String?
+      receiver; // 9efbf2f05081dcae470c1f3b8781c4030bb7fe17297dbdf10dcbcd3841d0a3f1;
   final BigInt? amount;
   final BigInt? fee;
   final String? memo;
@@ -626,8 +682,10 @@ class _SendingWidgetState extends State<SendingWidget> {
     printWidget("\n---📖 payload:");
     printWidget("amount:  ${widget.amount}");
     printWidget("fee:     ${widget.fee}");
-    printWidget("from:    ${_formatAccountAddress(widget.signer!.ecChecksumAddress.toString())}");
-    printWidget("to:      ${_formatAccountAddress(widget.receiver!.toString())}");
+    printWidget(
+        "from:    ${_formatAccountAddress(widget.signer!.ecChecksumAddress.toString())}");
+    printWidget(
+        "to:      ${_formatAccountAddress(widget.receiver!.toString())}");
 
     printWidget("\n---🤔 sending start=====>");
     var blockHeight = await Ledger.send(
@@ -636,20 +694,22 @@ class _SendingWidgetState extends State<SendingWidget> {
         amount: widget.amount!,
         sendOpts: SendOpts()
           ..fee = widget.fee
-          ..memo = widget.memo == null ? null : widget.memo!.plainToHex().hexToBn());
+          ..memo =
+              widget.memo == null ? null : widget.memo!.plainToHex().hexToBn());
     printWidget("\n---✅ sending end=====>");
     printWidget("\n---🔢 block height: $blockHeight");
 
-    var receiverAfterSend =
-        await Ledger.getBalance(agent: widget.agent!, accountId: widget.receiver!);
+    var receiverAfterSend = await Ledger.getBalance(
+        agent: widget.agent!, accountId: widget.receiver!);
     printWidget("\n---🧑 receiver balance after send:");
     printWidget(receiverAfterSend.e8s.toString());
-    var senderBalanceAfter =
-        await Ledger.getBalance(agent: widget.agent!, accountId: widget.signer!.ecChecksumAddress!);
+    var senderBalanceAfter = await Ledger.getBalance(
+        agent: widget.agent!, accountId: widget.signer!.ecChecksumAddress!);
     printWidget("\n---👩 sender balance after send:");
     printWidget(senderBalanceAfter.e8s.toString());
     printWidget("\n---💰 balance change:");
-    printWidget((senderBalanceAfter.e8s - widget.senderBalance!.e8s).toString());
+    printWidget(
+        (senderBalanceAfter.e8s - widget.senderBalance!.e8s).toString());
   }
 
   void printWidget(String str) {
@@ -667,6 +727,7 @@ class _SendingWidgetState extends State<SendingWidget> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: prints ?? []);
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start, children: prints ?? []);
   }
 }

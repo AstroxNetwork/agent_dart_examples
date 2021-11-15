@@ -4,10 +4,10 @@ packages:
   agent_dart:
     dependency: "direct main"
     description:
-      name: agent_dart
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.1.16+1"
+      path: "../../agent_dart"
+      relative: true
+    source: path
+    version: "0.1.16+2"
   agent_dart_auth:
     dependency: "direct main"
     description:

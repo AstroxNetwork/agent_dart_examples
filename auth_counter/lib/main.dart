@@ -50,7 +50,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> initCounter({Identity? identity}) async {
     // initialize counter, change canister id here
-    counter = Counter(canisterId: '75ffu-oaaaa-aaaaa-aabbq-cai', url: 'http://localhost:8000');
+    counter = Counter(
+        canisterId: 'si2b5-pyaaa-aaaaa-aaaja-cai',
+        url: 'http://localhost:8000');
     // set agent when other paramater comes in like new Identity
     await counter?.setAgent(newIdentity: identity);
     isAnon();
@@ -100,7 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
       var authClient = WebAuthProvider(
           scheme: "identity",
           path: 'auth',
-          authUri: Uri.parse('http://7ugoi-yiaaa-aaaaa-aabaa-cai.localhost:8000'),
+          authUri:
+              Uri.parse('http://qvhpv-4qaaa-aaaaa-aaagq-cai.localhost:8000'),
           useLocalPage: true);
 
       await authClient.login(
@@ -120,14 +123,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    var logginButton = (_identity == null || _identity!.getPrincipal().isAnonymous())
-        ? MaterialButton(
-            onPressed: () async {
-              await authenticate();
-            },
-            child: Text('Login Button'),
-          )
-        : SizedBox.shrink();
+    var logginButton =
+        (_identity == null || _identity!.getPrincipal().isAnonymous())
+            ? MaterialButton(
+                onPressed: () async {
+                  await authenticate();
+                },
+                child: Text('Login Button'),
+              )
+            : SizedBox.shrink();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
