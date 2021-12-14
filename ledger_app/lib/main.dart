@@ -91,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<AgentFactory> getAgent() async {
     return await AgentFactory.createAgent(
         canisterId:
-            "5s64f-ryaaa-aaaaa-aabna-cai", // "6xkho-mqaaa-aaaaa-aabgq-cai", //"ryjl3-tyaaa-aaaaa-aaaba-cai", // local ledger canister id, should change accourdingly
+            "ryjl3-tyaaa-aaaaa-aaaba-cai", // "6xkho-mqaaa-aaaaa-aabgq-cai", //"ryjl3-tyaaa-aaaaa-aaaba-cai", // local ledger canister id, should change accourdingly
         url:
             "http://localhost:8000", //"http://localhost:8000", //"https://raw.ic0.app/", // For Android emulator, please use 10.0.2.2 as endpoint
         idl: ledgerIdl,
@@ -727,7 +727,9 @@ class _SendingWidgetState extends State<SendingWidget> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.start, children: prints ?? []);
+    return SingleChildScrollView(
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: prints ?? []));
   }
 }
