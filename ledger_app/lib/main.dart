@@ -130,17 +130,23 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> setReceiverBalance() async {
-    var receiverBalance =
-        await Ledger.getBalance(agent: _agent!, accountId: _receiver!);
-    setState(() {
-      _receiverBalance = receiverBalance;
-    });
+    // var accountId = _receiver!;
+    // if (_receiver!.length < 64) {
+    //   accountId = Principal.fromText(_receiver!).toAccountID().toString();
+    // }
+    // var receiverBalance =
+    //     await Ledger.getBalance(agent: _agent!, accountId: accountId);
+    // setState(() {
+    //   _receiverBalance = receiverBalance;
+    // });
   }
 
   void setReceiver(String receiver) {
     if (receiver.isNotEmpty) {
       setState(() {
-        _receiver = receiver;
+        _receiver = receiver.length < 64
+            ? Principal.fromText(receiver).toHex()
+            : receiver;
       });
     }
   }
@@ -676,8 +682,8 @@ class _SendingWidgetState extends State<SendingWidget> {
     printWidget("\n---👩 sender Balance before send:");
     printWidget(widget.senderBalance!.e8s.toString());
 
-    printWidget("\n---🧑 receiver balance before send:");
-    printWidget(widget.receiverBalance!.e8s.toString());
+    // printWidget("\n---🧑 receiver balance before send:");
+    // printWidget(widget.receiverBalance!.e8s.toString());
 
     printWidget("\n---📖 payload:");
     printWidget("amount:  ${widget.amount}");
@@ -699,10 +705,10 @@ class _SendingWidgetState extends State<SendingWidget> {
     printWidget("\n---✅ sending end=====>");
     printWidget("\n---🔢 block height: $blockHeight");
 
-    var receiverAfterSend = await Ledger.getBalance(
-        agent: widget.agent!, accountId: widget.receiver!);
-    printWidget("\n---🧑 receiver balance after send:");
-    printWidget(receiverAfterSend.e8s.toString());
+    // var receiverAfterSend = await Ledger.getBalance(
+    //     agent: widget.agent!, accountId: widget.receiver!);
+    // printWidget("\n---🧑 receiver balance after send:");
+    // printWidget(receiverAfterSend.e8s.toString());
     var senderBalanceAfter = await Ledger.getBalance(
         agent: widget.agent!, accountId: widget.signer!.ecChecksumAddress!);
     printWidget("\n---👩 sender balance after send:");
